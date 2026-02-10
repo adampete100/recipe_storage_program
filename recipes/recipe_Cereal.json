@@ -1,10 +1,10 @@
 {
   "title": "Cereal",
-  "author": "Adam Petersen",
-  "date": "2026-02-08 02:01",
+  "author": "Levi Petersen",
+  "date": "2026-02-10 00:35 (edited) (edited) (edited)",
   "instructions": {
-    "time": "0hrs 1mins",
-    "ingredients": ["Cereal", "Milk"],
-    "steps": ["1. Add cereal to bowl", "2. Pour milk in same bowl", "3. Enjoy!"]
+    "time": "0hrs 2mins",
+    "ingredients": ["Cereal", "Milk", "Sugar"],
+    "steps": ["1. pour milk and cereal into bowl", "2. enjoy"]
   }
 }

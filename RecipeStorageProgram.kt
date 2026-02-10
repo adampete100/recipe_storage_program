@@ -56,20 +56,25 @@ fun viewRecipes() {
         val selectedFile = files[choice - 1]
         val content = selectedFile.readText()
 
-        // Manually parse the clean data from the JSON string
+        //manually parse the clean data from the JSON string
         val title = content.substringAfter("\"title\": \"").substringBefore("\",")
         val author = content.substringAfter("\"author\": \"").substringBefore("\",")
         val date = content.substringAfter("\"date\": \"").substringBefore("\",")
         val time = content.substringAfter("\"time\": \"").substringBefore("\",")
 
-        // Complex parsing for lists (ingredients and steps)
+        // parsing for ingredients: cleans up trailing JSON brackets/quotes
         val ingredientsString = content.substringAfter("\"ingredients\": [").substringBefore("],")
-        val ingredients = ingredientsString.split("\", \"").map { it.trim('"') }
+        val ingredients = ingredientsString.split("\", \"").map {
+            it.trim().trim('"').dropLastWhile { char -> !char.isLetterOrDigit() }
+        }
 
+        // parsing for steps: cleans up the end of the file markers
         val stepsString = content.substringAfter("\"steps\": [").substringBefore("]\n")
-        val steps = stepsString.split("\", \"").map { it.trim('"') }
+        val steps = stepsString.split("\", \"").map {
+            it.trim().trim('"').dropLastWhile { char -> !char.isLetterOrDigit() && char != '!' && char != '.' }
+        }
 
-        // Print the data in a clean format
+        //print the data in a clean format
         println("\n--- $title ---")
         println("By: $author | Created: $date | Cook Time: $time")
 
@@ -87,14 +92,73 @@ fun viewRecipes() {
 //------recipe editing section
 //function for editing recipes
 fun editRecipe() {
-    println("Select a recipe to edit (follows the 'Add' process to overwrite):")
     val folder = File("recipes")
-    if (!folder.exists() || folder.listFiles()?.isEmpty() == true) {
-        println("No recipes to edit.")
+    val files = folder.listFiles()?.filter { it.extension == "json" } ?: emptyList()
+
+    if (files.isEmpty()) {
+        println("No recipes found to edit.")
         return
     }
-    //re-using addRecipe logic for manual editing as discussed
-    addRecipe()
+
+    //display numbered list
+    files.forEachIndexed { index, file ->
+        println("${index + 1}. ${file.nameWithoutExtension.removePrefix("recipe_")}")
+    }
+
+    println("\nEnter the number to edit (or '0' to cancel):")
+    val choice = readlnOrNull()?.toIntOrNull() ?: 0
+    if (choice !in 1..files.size) return
+
+    val selectedFile = files[choice - 1]
+    val content = selectedFile.readText()
+
+    //step 1: "load" existing data using manual parsing
+    var title = content.substringAfter("\"title\": \"").substringBefore("\",")
+    var author = content.substringAfter("\"author\": \"").substringBefore("\",")
+    val date = content.substringAfter("\"date\": \"").substringBefore("\",")
+    val time = content.substringAfter("\"time\": \"").substringBefore("\",")
+
+    val ingString = content.substringAfter("\"ingredients\": [").substringBefore("],")
+    val currentIngredients = ingString.split("\", \"").map { it.trim().trim('"','[',']','{','}') }
+
+    val stepString = content.substringAfter("\"steps\": [").substringBefore("]\n")
+    val currentSteps = stepString.split("\", \"").map { it.trim().trim('"','[',']','{','}') }
+
+    var instructions = RecipeInstructions(time, currentIngredients, currentSteps)
+
+    //step 2: ask what to change
+    println("\nEditing: $title")
+    println("1. Title\n2. Author\n3. Instructions\n4. Cancel")
+
+    when (readlnOrNull()) {
+        "1" -> {
+            val oldFile = selectedFile
+            val newTitle = addTitle()
+
+            // Step 1: Save the new file first
+            saveEditedRecipe(newTitle, author, instructions, date)
+
+            // Step 2: ONLY delete the old file if the name is actually different
+            val newSafeTitle = "recipe_${newTitle.replace(" ", "_")}.json"
+            if (newSafeTitle != oldFile.name) {
+                oldFile.delete()
+                println("Title updated and old file removed.")
+            } else {
+                println("Title updated in existing file.")
+            }
+        }
+        "2" -> {
+            author = addAuthor()
+            saveEditedRecipe(title, author, instructions, date)
+            println("Author updated!")
+        }
+        "3" -> {
+            instructions = addInstructions()
+            saveEditedRecipe(title, author, instructions, date)
+            println("Instructions updated!")
+        }
+        else -> println("Edit cancelled.")
+    }
 }
 
 //helper function to save edited data
@@ -128,7 +192,7 @@ fun deleteRecipe() {
         return
     }
 
-    // Use removePrefix here too for cleaner output
+    //use removePrefix here too for cleaner output
     files.forEachIndexed { index, file -> println("${index + 1}. ${file.nameWithoutExtension.removePrefix("recipe_")}") }
     println("Enter the number to delete (or '0' to cancel):")
     val choice = readlnOrNull()?.toIntOrNull() ?: 0

@@ -1,10 +1,10 @@
 {
   "title": "Cereal",
   "author": "Adam Petersen",
-  "date": "2026-02-08 02:01",
+  "date": "2026-02-10 00:35",
   "instructions": {
     "time": "0hrs 1mins",
     "ingredients": ["Cereal", "Milk"],
-    "steps": ["1. Add cereal to bowl", "2. Pour milk in same bowl", "3. Enjoy!"]
+    "steps": ["1. Pour cereal into bowl", "2. Pour milk into same bowl", "3. Enjoy!"]
   }
 }
