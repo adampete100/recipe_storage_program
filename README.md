@@ -19,6 +19,12 @@ This project also challenged me to implement manual data serialization and file 
 
 [Software Demo Video](https://youtu.be/AAkhyQdYuEU)
 
+# Instructions to run
+
+- Install the IntelliJ IDEA IDE (make sure to associate program with .kt, .kts, .java, and .gradle files in setup)
+- Open folder containing the recipe storage program in IntelliJ (use + button on left side of the window and choose folder)
+- Open RecipeStorageProgram in IDE, and make sure Java SDK and JDK are installed when prompted by a popup notification
+
 
 # Development Environment
 
